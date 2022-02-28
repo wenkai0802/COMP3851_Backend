@@ -4,7 +4,9 @@ const bcrypt = require("bcrypt");
 class AdminController {
   static async adminLogin(req, res, next) {
     try {
-      const { adminId, password } = req.body;
+      //const { adminId, password } = req.body;
+      const adminId = req.body.adminId
+      const password = req.body.password
       const pool = await poolPromise;
       const result = await pool
         .request()
