@@ -274,6 +274,71 @@ class DegreeController {
       res.status(404).json({ status: "failed", error: error.message });
     }
   }
+  static async getDegreeMajor(req, res, next) {
+    try {
+      const { degreeId } = req.params;
+
+      //grab course data with assumed knowledge first, then course availability
+      const pool = await poolPromise;
+      const result = await pool
+        .request()
+        .input("Degree_Id", degreeId)
+        .query(
+          "SELECT Major.Major_ID,Major_Name,Total_Unit FROM Degree_Major " +
+            "INNER JOIN Major ON Major.Major_ID = Degree_Major.Major_ID " +
+            "WHERE Degree_ID = @Degree_Id " +
+            "ORDER BY Major.Major_ID"
+        );
+        
+      const { recordset: results, rowsAffected } = result;
+
+      res.json({
+        result: results,
+        rowsAffected: rowsAffected[0],
+      });
+    } catch (error) {
+      console.log(error);
+      res.status(404).json({ status: "failed", message: error.message });
+    }
+  }
+  static async addDegreeMajor(req, res, next) {
+    try {
+      const { majorId } = req.body;
+      const degreeId = req.params.degreeId;
+
+      const pool = await poolPromise;
+      const result = await pool
+        .request()
+        .input("Degree_Id", degreeId)
+        .input("Major_Id", majorId)
+        .query(
+          "INSERT INTO Degree_Major " + "VALUES(@Degree_Id,@Major_Id)"
+        );
+
+      res.json({ status: "success" });
+    } catch (error) {
+      console.log(error);
+      res.status(409).json({ status: "failed", error: error.message });
+    }
+  }
+  static async deleteDegreeMajor(req, res, next) {
+    try {
+      const { majorId } = req.query;
+      const degreeId = req.params.degreeId;
+     
+      const pool = await poolPromise;
+      const result = await pool
+        .request()
+        .input("Degree_Id", degreeId)
+        .input("Major_Id", majorId)
+        .query(
+          "delete from Degree_Major where Major_ID=@Major_Id and Degree_ID=@Degree_Id"
+        );
+      res.json({ status: "success" });
+    } catch (error) {
+      res.status(404).json({ status: "failed", error: error.message });
+    }
+  }
 }
 
 module.exports = DegreeController;

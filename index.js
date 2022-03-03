@@ -5,6 +5,7 @@ const app = express();
 const DegreeRouter = require("./Routes/DegreeRoute");
 const CourseRouter = require("./Routes/CourseRoute");
 const AdminRouter = require("./Routes/AdminRoute");
+const MajorRouter = require("./Routes/MajorRoute");
 const session = require("express-session");
 const CampusRouter = require("./Routes/CampusRoute");
 
@@ -24,6 +25,7 @@ app.use("/api/degree", DegreeRouter);
 app.use("/api/course", CourseRouter);
 app.use("/api/admin", AdminRouter);
 app.use("/api/campus", CampusRouter);
+app.use("/api/major", MajorRouter);
 app.listen(process.env.PORT || 5000, () => {
   console.log("listening to port 5000");
 });
