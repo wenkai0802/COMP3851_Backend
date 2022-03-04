@@ -1,27 +1,43 @@
 const { poolPromise, sql } = require("../database.js");
 class DegreeController {
-  static async getDegreeByCampus(req, res, next) {
+  static async getDegree(req, res, next) {
     try {
-      const campusId = req.query.campusId;
+      let { search, studyArea, level } = req.query;
       const pool = await poolPromise;
-      const result = await pool
-        .request()
-        .input("campus_id", campusId)
-        .query(
-          "SELECT Degree.Degree_ID,Degree_Name FROM Degree " +
-            "inner join Campus_Degree  ON  Degree.Degree_ID = Campus_Degree.Degree_ID " +
-            "WHERE Campus_ID = @campus_id"
-        );
+      let result;
+      //if search is exists, then search by the name and ID
+      //else retrieve all records
+      let queryString = "SELECT Degree_ID,Degree_Name FROM Degree ";
+      if (search && search != "") {
+        search = "%" + search + "%";
+        queryString += `WHERE Degree_ID LIKE '${search}' OR Degree_Name LIKE '${search}' `;
+      } else if (studyArea || level) {
+        if (studyArea && level)
+          //get record by both of the field
+          queryString += `WHERE level IN (${level.map(
+            (lvl) => `'${lvl}'`
+          )}) AND StudyArea in (${studyArea.map((area) => `'${area}'`)})`;
+        else if (level)
+          //get by level field
+          queryString += `WHERE level IN (${level.map((lvl) => `'${lvl}'`)})`;
+        //get by study Area field
+        else
+          queryString += `WHERE StudyArea in (${studyArea.map(
+            (area) => `'${area}'`
+          )})`;
+      }
+
+      result = await pool.request().query(queryString);
 
       const { recordset: results, rowsAffected } = result;
 
-      if (rowsAffected[0] === 0)
-        throw Error("No record founded for the campus id");
-
-      res.json({ status: "success", results, rowsAffected: rowsAffected[0] });
+      res.json({
+        result: results,
+        rowsAffected: rowsAffected[0],
+      });
     } catch (error) {
       console.log(error);
-      res.json({ status: "failed", message: error.message });
+      res.status(404).json({ status: "failed", message: error.message });
     }
   }
   static async getDegreeById(req, res, next) {
@@ -38,7 +54,7 @@ class DegreeController {
       res.json({ result: recordset[0], rowsAffected: rowsAffected[0] });
     } catch (error) {
       console.log(error);
-      res.status(400).json({ status: "failed", message: error.message });
+      res.status(404).json({ status: "failed", message: error.message });
     }
   }
   static async addDegree(req, res, next) {
@@ -58,12 +74,30 @@ class DegreeController {
 
       res.json({ status: "success" });
     } catch (error) {
-      res.status(400).json({ status: "failed", error: error.message });
+      res.status(409).json({ status: "failed", error: error.message });
+    }
+  }
+  static async deleteDegree(req, res, next) {
+    try {
+      const { degreeIds } = req.query;
+      const pool = await poolPromise;
+      const result = await pool
+        .request()
+        .query(
+          `DELETE FROM Degree WHERE Degree_ID in (${degreeIds.map(
+            (id) => `'${id}'`
+          )})`
+        );
+
+      res.json({ status: "success" });
+    } catch (error) {
+      res.status(404).json({ status: "failed", error: error.message });
     }
   }
   static async updateDegree(req, res, next) {
     try {
       const { degreeId, degreeName, totalCredit, minYear, maxYear } = req.body;
+      if (!degreeId) throw Error("Please provide degree ID");
       const pool = await poolPromise;
       const result = await pool
         .request()
@@ -81,7 +115,7 @@ class DegreeController {
       if (result.rowsAffected[0] === 0) throw Error("Degree ID not found"); //if update not occured
       res.json({ status: "success" });
     } catch (error) {
-      res.status(400).json({ status: "failed", error: error.message });
+      res.status(409).json({ status: "failed", error: error.message });
     }
   }
   static async getDegreeCourse(req, res, next) {
@@ -174,7 +208,7 @@ class DegreeController {
       res.json({ Degree_ID: degreeId, result: courseList });
     } catch (error) {
       console.log(error);
-      res.status(400).json({ status: "failed", error: error.message });
+      res.status(404).json({ status: "failed", error: error.message });
     }
   }
   static async addDegreeCourse(req, res, next) {
@@ -195,7 +229,7 @@ class DegreeController {
       res.json({ status: "success" });
     } catch (error) {
       console.log(error);
-      res.status(400).json({ status: "failed", error: error.message });
+      res.status(409).json({ status: "failed", error: error.message });
     }
   }
   static async deleteDegreeCourse(req, res, next) {
@@ -215,7 +249,29 @@ class DegreeController {
         );
       res.json({ status: "success" });
     } catch (error) {
-      res.status(400).json({ status: "failed", error: error.message });
+      res.status(404).json({ status: "failed", error: error.message });
+    }
+  }
+  static async getFilterOptions(req, res, next) {
+    try {
+      const pool = await poolPromise;
+      const result = await pool
+        .request()
+        .query(
+          "SELECT DISTINCT(Level) as Level FROM Degree;" +
+            "SELECT DISTINCT(StudyArea) as StudyArea FROM Degree;"
+        );
+
+      let [Level, StudyArea] = result.recordsets;
+      Level = Level.map((item) => item.Level);
+      StudyArea = StudyArea.map((item) => item.StudyArea);
+      const response = [
+        { name: "Level", options: Level },
+        { name: "Study Area", options: StudyArea },
+      ];
+      res.json({ result: response });
+    } catch (error) {
+      res.status(404).json({ status: "failed", error: error.message });
     }
   }
 }

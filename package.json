@@ -4,15 +4,19 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "nodemon index.js",
+    "dev": "set NODE_ENV=development && node index.js",
+    "devNodemon":"set NODE_ENV=development && nodemon index.js",
+    "prod":"set NODE_ENV=production && node index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "bcrypt": "^5.0.1",
     "cors": "^2.8.5",
     "dotenv": "^16.0.0",
     "express": "^4.17.2",
+    "express-session": "^1.17.2",
     "mssql": "^8.0.2"
   }
 }
