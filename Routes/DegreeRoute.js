@@ -15,6 +15,6 @@ DegreeRouter.route("/:degreeId/course")
   .delete(authenticate, DegreeController.deleteDegreeCourse);
 DegreeRouter.route("/:degreeId/major")
   .get(DegreeController.getDegreeMajor)
-  .post(DegreeController.addDegreeMajor)
-  .delete(DegreeController.deleteDegreeMajor)
+  .post(authenticate, DegreeController.addDegreeMajor)
+  .delete(authenticate, DegreeController.deleteDegreeMajor);
 module.exports = DegreeRouter;

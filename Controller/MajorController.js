@@ -52,10 +52,11 @@ class MajorController {
         .input("Major_Name", majorName)
         .input("Total_Unit", totalUnit)
         .query(
-          "INSERT INTO Major VALUES(@Major_Name,@Total_Unit)"
+          "INSERT INTO Major VALUES(@Major_Name,@Total_Unit) " +
+            "SELECT SCOPE_IDENTITY() AS id;"
         );
 
-      res.json({ status: "success" });
+      res.json({ status: "success", insertedId: result.recordset[0].id });
     } catch (error) {
       res.status(409).json({ status: "failed", error: error.message });
     }
@@ -88,7 +89,7 @@ class MajorController {
         .input("Major_Name", majorName)
         .input("Total_Unit", totalUnit)
         .query(
-          //chkecup with wenkai whether query should be done major with major name 
+          //chkecup with wenkai whether query should be done major with major name
           "UPDATE Major " +
             "SET Major_Name = @Major_Name,Total_Unit = @Total_Unit " +
             "WHERE Major_Id = @Major_Id"

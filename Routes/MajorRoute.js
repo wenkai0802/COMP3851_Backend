@@ -5,12 +5,12 @@ MajorRouter.get("/:majorId", MajorController.getMajorById);
 
 MajorRouter.route("/")
   .get(MajorController.getMajor)
-  .post(MajorController.addMajor)
-  .delete(MajorController.deleteMajor)
-  .put(MajorController.updateMajor);
+  .post(authenticate, MajorController.addMajor)
+  .delete(authenticate, MajorController.deleteMajor)
+  .put(authenticate, MajorController.updateMajor);
 MajorRouter.route("/:majorId/course")
-  .get(MajorController.getMajorCourse)
-  .post(MajorController.addMajorCourse)
-  .delete(MajorController.deleteMajorCourse);
+  .get(authenticate, MajorController.getMajorCourse)
+  .post(authenticate, MajorController.addMajorCourse)
+  .delete(authenticate, MajorController.deleteMajorCourse);
 
 module.exports = MajorRouter;
