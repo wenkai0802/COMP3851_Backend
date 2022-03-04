@@ -13,5 +13,8 @@ DegreeRouter.route("/:degreeId/course")
   .get(DegreeController.getDegreeCourse)
   .post(authenticate, DegreeController.addDegreeCourse)
   .delete(authenticate, DegreeController.deleteDegreeCourse);
-
+DegreeRouter.route("/:degreeId/major")
+  .get(DegreeController.getDegreeMajor)
+  .post(authenticate, DegreeController.addDegreeMajor)
+  .delete(authenticate, DegreeController.deleteDegreeMajor);
 module.exports = DegreeRouter;
