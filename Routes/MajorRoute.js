@@ -9,7 +9,7 @@ MajorRouter.route("/")
   .delete(authenticate, MajorController.deleteMajor)
   .put(authenticate, MajorController.updateMajor);
 MajorRouter.route("/:majorId/course")
-  .get(authenticate, MajorController.getMajorCourse)
+  .get(MajorController.getMajorCourse)
   .post(authenticate, MajorController.addMajorCourse)
   .delete(authenticate, MajorController.deleteMajorCourse);
 
