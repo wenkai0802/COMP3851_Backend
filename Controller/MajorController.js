@@ -115,7 +115,7 @@ class MajorController {
             "LEFT JOIN Course_Assumed_Knowledge ON Course.Course_ID = Course_Assumed_Knowledge.Course_ID " +
             "INNER JOIN Major_Course ON Course.Course_ID = Major_Course.Course_ID " +
             "WHERE Major_ID = @Major_Id " +
-            "ORDER BY Course.Course_ID"
+            "ORDER BY Type,Course.Course_ID"
         );
 
       const pool2 = await poolPromise;
@@ -127,7 +127,7 @@ class MajorController {
             "INNER JOIN Major_Course ON Course.Course_ID = Major_Course.Course_ID " +
             "INNER JOIN Course_Availability on Course_Availability.Course_ID = Course.Course_ID " +
             "WHERE Major_ID = @Major_Id " +
-            "ORDER BY Course.Course_ID"
+            "ORDER BY Type,Course.Course_ID"
         );
       const resultWithAK = result1.recordset;
       const resultWithAvailability = result2.recordset;

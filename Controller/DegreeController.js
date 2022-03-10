@@ -132,7 +132,7 @@ class DegreeController {
             "LEFT JOIN Course_Assumed_Knowledge ON Course.Course_ID = Course_Assumed_Knowledge.Course_ID " +
             "INNER JOIN Degree_Course ON Course.Course_ID = Degree_Course.Course_ID " +
             "WHERE Degree_ID = @Degree_Id " +
-            "ORDER BY Course.Course_ID"
+            "ORDER BY Type,Course.Course_ID"
         );
 
       const pool2 = await poolPromise;
@@ -144,7 +144,7 @@ class DegreeController {
             "INNER JOIN Degree_Course ON Course.Course_ID = Degree_Course.Course_ID " +
             "INNER JOIN Course_Availability on Course_Availability.Course_ID = Course.Course_ID " +
             "WHERE Degree_ID = @Degree_Id " +
-            "ORDER BY Course.Course_ID"
+            "ORDER BY Type,Course.Course_ID"
         );
       const resultWithAK = result1.recordset;
       const resultWithAvailability = result2.recordset;
@@ -289,7 +289,7 @@ class DegreeController {
             "WHERE Degree_ID = @Degree_Id " +
             "ORDER BY Major.Major_ID"
         );
-        
+
       const { recordset: results, rowsAffected } = result;
 
       res.json({
@@ -311,9 +311,7 @@ class DegreeController {
         .request()
         .input("Degree_Id", degreeId)
         .input("Major_Id", majorId)
-        .query(
-          "INSERT INTO Degree_Major " + "VALUES(@Degree_Id,@Major_Id)"
-        );
+        .query("INSERT INTO Degree_Major " + "VALUES(@Degree_Id,@Major_Id)");
 
       res.json({ status: "success" });
     } catch (error) {
@@ -325,7 +323,7 @@ class DegreeController {
     try {
       const { majorId } = req.query;
       const degreeId = req.params.degreeId;
-     
+
       const pool = await poolPromise;
       const result = await pool
         .request()
