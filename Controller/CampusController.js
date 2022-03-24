@@ -27,16 +27,49 @@ class CampusController {
       res.status(404).json({ status: "failed", error: error.message });
     }
   }
-  static async addCampus(req, res, next) {
+  static async getCampusById(req, res, next) {
     try {
-      const { campusId, campusName } = req.body;
+      const { campusId } = req.params;
+      const pool = await poolPromise;
+
+      const result = await pool
+        .request()
+        .input("Campus_Id", campusId)
+        .query("SELECT * FROM Campus WHERE Campus_ID=@Campus_Id");
+      res.json({ result: result.recordset[0] });
+    } catch (error) {
+      res.status(409).json({ status: "failed", error: error.message });
+    }
+  }
+  static async updateCampus(req, res, next) {
+    try {
+      const { campusId, campusName, Location } = req.body;
       const pool = await poolPromise;
 
       const result = await pool
         .request()
         .input("Campus_Id", campusId)
         .input("Campus_Name", campusName)
-        .query("INSERT INTO Campus VALUES(@Campus_Id,@Campus_Name)");
+        .input("Location", Location)
+        .query(
+          "UPDATE Campus SET Campus_Name=@Campus_Name,Location=@Location WHERE Campus_ID=@Campus_Id"
+        );
+      res.json({ status: "success" });
+    } catch (error) {
+      res.status(409).json({ status: "failed", error: error.message });
+    }
+  }
+  static async addCampus(req, res, next) {
+    try {
+      const { campusId, campusName, Location } = req.body;
+      const pool = await poolPromise;
+      if (campusId === "") throw new Error("Id cannot be empty");
+      const result = await pool
+        .request()
+        .input("Campus_Id", campusId)
+        .input("Campus_Name", campusName)
+        .input("Location", Location)
+        .query("INSERT INTO Campus VALUES(@Campus_Id,@Campus_Name,@Location)");
       res.json({ status: "success" });
     } catch (error) {
       res.status(409).json({ status: "failed", error: error.message });
@@ -121,9 +154,11 @@ class CampusController {
         .request()
         .query("SELECT DISTINCT(Location) as location FROM Campus");
       let { recordset } = result;
+
       recordset = recordset.map((record) => {
         return record.location;
       });
+
       const response = [{ name: "Location", options: recordset }];
       res.json({ result: response });
     } catch (error) {

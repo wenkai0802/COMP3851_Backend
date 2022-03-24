@@ -46,6 +46,7 @@ class MajorController {
   static async addMajor(req, res, next) {
     try {
       const { majorName, totalUnit } = req.body;
+
       const pool = await poolPromise;
       const result = await pool
         .request()
@@ -104,7 +105,7 @@ class MajorController {
   static async getMajorCourse(req, res, next) {
     try {
       const { majorId } = req.params;
-
+      const { campusId } = req.query;
       //grab course data with assumed knowledge first, then course availability
       const pool1 = await poolPromise;
       const result1 = await pool1
@@ -114,7 +115,7 @@ class MajorController {
           "SELECT Course.Course_ID,Course_Name,Unit,Required_Unit,Alternative1,Alternative2,[Type] FROM Course " +
             "LEFT JOIN Course_Assumed_Knowledge ON Course.Course_ID = Course_Assumed_Knowledge.Course_ID " +
             "INNER JOIN Major_Course ON Course.Course_ID = Major_Course.Course_ID " +
-            "WHERE Major_ID = @Major_Id " +
+            "WHERE Major_ID = @Major_Id  " +
             "ORDER BY Type,Course.Course_ID"
         );
 
@@ -122,11 +123,12 @@ class MajorController {
       const result2 = await pool2
         .request()
         .input("Major_Id", majorId)
+        .input("Campus_Id", campusId)
         .query(
           "SELECT Course.Course_ID,Available_Year,Semester FROM Course " +
             "INNER JOIN Major_Course ON Course.Course_ID = Major_Course.Course_ID " +
             "INNER JOIN Course_Availability on Course_Availability.Course_ID = Course.Course_ID " +
-            "WHERE Major_ID = @Major_Id " +
+            "WHERE Major_ID = @Major_Id AND Course_Availability.Campus_ID = @Campus_Id " +
             "ORDER BY Type,Course.Course_ID"
         );
       const resultWithAK = result1.recordset;

@@ -37,6 +37,7 @@ class CourseController {
   static async addCourse(req, res, next) {
     try {
       const { courseId, courseName, unit, requiredUnit } = req.body;
+      if (courseId === "") throw new Error("Id cannot be empty");
       const pool = await poolPromise;
       const result = await pool
         .request()

@@ -59,7 +59,16 @@ class DegreeController {
   }
   static async addDegree(req, res, next) {
     try {
-      const { degreeId, degreeName, totalCredit, minYear, maxYear } = req.body;
+      const {
+        degreeId,
+        degreeName,
+        totalCredit,
+        minYear,
+        maxYear,
+        Level,
+        studyArea,
+      } = req.body;
+      if (degreeId === "") throw new Error("Id cannot be empty");
       const pool = await poolPromise;
       const result = await pool
         .request()
@@ -68,8 +77,10 @@ class DegreeController {
         .input("Total_Credit", totalCredit)
         .input("Min_Year", minYear)
         .input("Max_Year", maxYear)
+        .input("Level", Level)
+        .input("studyArea", studyArea)
         .query(
-          "INSERT INTO Degree VALUES(@Degree_Id,@Degree_Name,@Total_Credit,@Min_Year,@Max_Year)"
+          "INSERT INTO Degree VALUES(@Degree_Id,@Degree_Name,@Total_Credit,@Min_Year,@Max_Year,@Level,@studyArea)"
         );
 
       res.json({ status: "success" });
@@ -96,7 +107,15 @@ class DegreeController {
   }
   static async updateDegree(req, res, next) {
     try {
-      const { degreeId, degreeName, totalCredit, minYear, maxYear } = req.body;
+      const {
+        degreeId,
+        degreeName,
+        totalCredit,
+        minYear,
+        maxYear,
+        Level,
+        studyArea,
+      } = req.body;
       if (!degreeId) throw Error("Please provide degree ID");
       const pool = await poolPromise;
       const result = await pool
@@ -106,9 +125,11 @@ class DegreeController {
         .input("Total_Credit", totalCredit)
         .input("Min_Year", minYear)
         .input("Max_Year", maxYear)
+        .input("Level", Level)
+        .input("studyArea", studyArea)
         .query(
           "UPDATE Degree " +
-            "SET Degree_Name = @Degree_Name,Total_Credit = @Total_Credit,Min_Year = @Min_Year, Max_Year = @Max_Year " +
+            "SET Degree_Name = @Degree_Name,Total_Credit = @Total_Credit,Min_Year = @Min_Year, Max_Year = @Max_Year, Level=@Level, studyArea=@studyArea " +
             "WHERE Degree_ID = @Degree_Id"
         );
 
@@ -121,7 +142,7 @@ class DegreeController {
   static async getDegreeCourse(req, res, next) {
     try {
       const { degreeId } = req.params;
-
+      const { campusId } = req.query;
       //grab course data with assumed knowledge first, then course availability
       const pool1 = await poolPromise;
       const result1 = await pool1
@@ -139,11 +160,12 @@ class DegreeController {
       const result2 = await pool2
         .request()
         .input("Degree_Id", degreeId)
+        .input("Campus_Id", campusId)
         .query(
           "SELECT Course.Course_ID,Available_Year,Semester FROM Course " +
             "INNER JOIN Degree_Course ON Course.Course_ID = Degree_Course.Course_ID " +
             "INNER JOIN Course_Availability on Course_Availability.Course_ID = Course.Course_ID " +
-            "WHERE Degree_ID = @Degree_Id " +
+            "WHERE Degree_ID = @Degree_Id AND Course_Availability.Campus_ID = @Campus_Id " +
             "ORDER BY Type,Course.Course_ID"
         );
       const resultWithAK = result1.recordset;
